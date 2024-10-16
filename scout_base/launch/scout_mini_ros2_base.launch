@@ -1,0 +1,77 @@
+import os
+
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    # Declare the launch arguments
+    port_name_arg = DeclareLaunchArgument(
+        'port_name',
+        default_value='can0',
+        description='Port name, e.g., "can0" or "/dev/ttyUSB0"'
+    )
+
+    is_scout_mini_arg = DeclareLaunchArgument(
+        'is_scout_mini',
+        default_value='true',
+        description='Flag to indicate if the robot is Scout Mini'
+    )
+
+    is_omni_wheel_arg = DeclareLaunchArgument(
+        'is_omni_wheel',
+        default_value='false',
+        description='Flag to indicate if the robot has omni wheels'
+    )
+
+    simulated_robot_arg = DeclareLaunchArgument(
+        'simulated_robot',
+        default_value='false',
+        description='Flag to indicate if the robot is simulated'
+    )
+
+    odom_topic_name_arg = DeclareLaunchArgument(
+        'odom_topic_name',
+        default_value='odom',
+        description='Name of the odometry topic'
+    )
+
+    # Launch configurations to use the declared arguments
+    port_name = LaunchConfiguration('port_name')
+    is_scout_mini = LaunchConfiguration('is_scout_mini')
+    is_omni_wheel = LaunchConfiguration('is_omni_wheel')
+    simulated_robot = LaunchConfiguration('simulated_robot')
+    odom_topic_name = LaunchConfiguration('odom_topic_name')
+
+    # Define the node with parameters
+    scout_base_node = Node(
+        package='scout_base',
+        executable='scout_base_node',
+        name='scout_base_node',
+        output='screen',
+        parameters=[
+            {'is_scout_mini': is_scout_mini},
+            {'is_omni_wheel': is_omni_wheel},
+            {'port_name': port_name},
+            {'simulated_robot': simulated_robot},
+            {'odom_frame': 'odom'},
+            {'base_frame': 'base_link'},
+            {'odom_topic_name': odom_topic_name}
+        ]
+    )
+
+    # Create the launch description and populate
+    ld = LaunchDescription()
+
+    # Add the declared arguments
+    ld.add_action(port_name_arg)
+    ld.add_action(is_scout_mini_arg)
+    ld.add_action(is_omni_wheel_arg)
+    ld.add_action(simulated_robot_arg)
+    ld.add_action(odom_topic_name_arg)
+
+    # Add the node
+    ld.add_action(scout_base_node)
+
+    return ld
